@@ -24,12 +24,14 @@ projectfile<-"./activity.csv"
 
 
 ## Loading and preprocessing the data
+  
+Read in and clean the data
 ```{r}
 
-#Read in the data
+
 activitydata<-read.csv(projectfile,colClasses = c("integer","character","integer"))
 
-#Clean the data
+
 activitydata$date<-as.Date(activitydata$date)
 activitydata<-mutate(activitydata,weekday=wday(date))
 activitydata<-arrange(activitydata,interval)
@@ -39,8 +41,11 @@ activitydata<-arrange(activitydata,interval)
 daysums<-tapply(activitydata$steps,activitydata$date,mean,na.rm=T)
 hist(daysums)
 stepaverage<-mean(daysums,na.rm = T)
+stepmedian<-median(daysums,na.rm = T)
 print(stepaverage)
+print(stepmedian)
 ```
+Mean of steps taken each day is `r stepaverage `, and median is `r stepmedian`.  
 
 ## What is the average daily activity pattern?
 ```{r}
@@ -54,8 +59,10 @@ print(maxinterval)
 ```
 
 ## Imputing missing values
+  
+  
+Using the "mice" impute function from the "mice package
 ```{r results='hide'}
-#Using the "mice" impute function from the "mice package"
 imputed_Data <- mice(groupedactivitydata, m=1, maxit = 10, method = 'pmm', seed = 500)
 completeData <- complete(imputed_Data)
 ```
@@ -65,14 +72,14 @@ hist(imputeddaysums)
 print(summary(imputeddaysums))
 
 ```
-Comparing to the previous histogram mean, we see that imputing the NAs does not make a significant difference.  
+Comparing to the previous histogram, median, and mean, we see that imputing the NAs does not make a significant difference.  
 
 ## Are there differences in activity patterns between weekdays and weekends?
 ```{r}
 completeData<-mutate(completeData,weekdaytype=factor(completeData$weekday,                                                    levels=1:7,labels=c("weekend","weekday","weekday","weekday"                                               ,"weekday","weekday","weekend")))
 completeData<-group_by(completeData,weekdaytype,interval)
 completeData<-mutate(completeData,intervalaverage=mean(steps,na.rm = T))
-xyplot(intervalaverage~interval|weekdaytype,completeData,type="l")
+xyplot(intervalaverage~interval|weekdaytype,completeData,type="l",layout=c(1,2))
 ```
   
   
